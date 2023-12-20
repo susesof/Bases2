@@ -1,0 +1,50 @@
+USE Practica2_BD2;
+
+CREATE TABLE HABITACION (
+    idHabitacion INT PRIMARY KEY,
+    habitacion VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE PACIENTE (
+    idPaciente INT PRIMARY KEY,
+    edad INT NOT NULL,
+    genero VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE LOG_ACTIVIDAD (
+    id_log_actividad INT AUTO_INCREMENT PRIMARY KEY,
+    timestampx VARCHAR(100) NOT NULL,
+    actividad VARCHAR(500) NOT NULL,
+    HABITACION_idHabitacion INT,
+    PACIENTE_idPaciente INT,
+    FOREIGN KEY (PACIENTE_idPaciente) REFERENCES PACIENTE(idPaciente),
+    FOREIGN KEY (HABITACION_idHabitacion) REFERENCES HABITACION(idHabitacion)
+);
+
+CREATE TABLE LOG_HABITACION (
+	id_log_habitacion INT AUTO_INCREMENT PRIMARY KEY,
+    idHabitacion INT,
+    timestampx VARCHAR(100),
+    statusx VARCHAR(45) NOT NULL,
+    FOREIGN KEY (idHabitacion) REFERENCES HABITACION(idHabitacion)
+);
+
+CREATE TABLE BITACORA(
+    id_bitacora INT AUTO_INCREMENT PRIMARY KEY,
+    accion VARCHAR(25),
+    mensaje VARCHAR(100),
+    id_logueado INT,
+    fecha_hora DATETIME
+);
+
+-- Vacio de la BD
+USE clinica;
+
+DELETE FROM LOG_HABITACION;
+DELETE FROM LOG_ACTIVIDAD;
+DELETE FROM PACIENTE;
+DELETE FROM HABITACION;
+
+-- Vaciar la bitacora
+DELETE FROM BITACORA;
+
