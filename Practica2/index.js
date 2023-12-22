@@ -7,9 +7,10 @@ import {
   DB_USER,
 } from "./config/config.js";
 
-
-
+import path from 'path';
+import fs from 'fs';
 import mysql from 'mysql2';
+import { fileURLToPath } from 'url';
 
 import { exec } from 'child_process';
 
@@ -269,6 +270,7 @@ function pantallaMenuPrincipal(usuario, userConn) {
   console.log('5. REALIZAR RESPALDO COMPLETO');
   console.log('6. VER RESPALDOS REALIZADOS');
   console.log('7. RESTAURAR RESPALDO');
+  console.log('8. CERRAR SESIÓN');
   rl.question('SELECCIONE UNA OPCIÓN: ', (opcionMenuPrincipal) => {
     switch (opcionMenuPrincipal) {
       case '1':
@@ -287,10 +289,14 @@ function pantallaMenuPrincipal(usuario, userConn) {
         realizarRespaldo(usuario, userConn);
         break;
       case '6':
-        listarRespaldosRealizados();
+        listarRespaldosRealizados(usuario,userConn);
         break;
       case '7':
         restaurarRespaldo(usuario, userConn);
+        break;
+      case '8':
+        userConn.end();
+        pantallaInicial();
         break;
       default:
         console.log('Opción no válida.');
@@ -306,6 +312,7 @@ function pantalla4(operacion, usuario, userConn) {
   console.log('2. HABITACIONES');
   console.log('3. LOG ACTIVIDAD');
   console.log('4. LOG HABITACION');
+  console.log('5. REGRESAR AL MENU PRINCIPAL');
   rl.question('SELECCIONE UNA OPCIÓN: ', (opcionMenuPrincipal) => {
     switch (opcionMenuPrincipal) {
       case '1':
@@ -319,6 +326,9 @@ function pantalla4(operacion, usuario, userConn) {
         break;
       case '4':
         realizarOperacion('LOG_HABITACION', operacion, userConn, usuario);
+        break;
+      case '5':
+        pantallaMenuPrincipal(usuario, userConn);
         break;
       default:
         console.log('Opción no válida.');
@@ -567,24 +577,35 @@ function getFormattedTimestamp() {
   const hours = date.getHours().toString().padStart(2, '0');
   const minutes = date.getMinutes().toString().padStart(2, '0');
   const seconds = date.getSeconds().toString().padStart(2, '0');
-  return `${day}-${month}-${year} ${hours}_${minutes}_${seconds}`;
+  return `${day}-${month}-${year}_${hours}_${minutes}_${seconds}`;
 }
 
 
-// Función para realizar respaldo completo
-function realizarRespaldo(usuario, userConn) {
-  const backupFileName = `${getFormattedTimestamp()}.sql`;
+function realizarRespaldo(usuario1,userConn) {
+  rl.question('Ingrese el nombre de usuario de MySQL: ', (usuario) => {
+    preguntaOculta('Ingrese la contraseña de MySQL: ', (contrasena) => {
+      const backupFileName = `${getFormattedTimestamp()}.sql`;
+      // El path completo donde se desea guardar el respaldo podría ser necesario dependiendo del sistema y permisos
+      const pathToSaveBackup = `${backupFileName}`; // Asegúrate de tener permisos de escritura en el directorio actual
 
-  const command = `mysqldump -u${userConn.user} -p${userConn.password} ${userConn.database} > ${backupFileName}`;
+      // Utiliza la utilidad de comillas adecuadas para contraseñas que puedan contener caracteres especiales
+      const command = `mysqldump -u ${usuario} -p Practica2_BD2 > ${pathToSaveBackup}`;
+  
+      console.log('Ejecutando comando de respaldo: ', command);
 
-  exec(command, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Error al realizar el respaldo: ${error}`);
-      return;
-    }
-    console.log(`Respaldo realizado con éxito: ${backupFileName}`);
+      exec(command, (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Error al realizar el respaldo: ${error.message}`);
+          return;
+        }
+        console.log(`Respaldo realizado con éxito: ${backupFileName}`);
+        pantallaMenuPrincipal(usuario1,userConn);
+      });
+    });
   });
+ 
 }
+
 
 // Función para restaurar respaldo
 function restaurarRespaldo(usuario, userConn) {
@@ -595,7 +616,7 @@ function restaurarRespaldo(usuario, userConn) {
       return;
     }
 
-    const command = `mysql -u${userConn.user} -p${userConn.password} ${userConn.database} < ${backupFileName}`;
+    const command = `mysql -u ${usuario} -p Practica2_BD2 < ${backupFileName}`;
 
     exec(command, (error, stdout, stderr) => {
       if (error) {
@@ -603,15 +624,19 @@ function restaurarRespaldo(usuario, userConn) {
         return;
       }
       console.log(`Respaldo restaurado con éxito: ${backupFileName}`);
+      pantallaMenuPrincipal(usuario,userConn);
     });
+
   });
+
+  
 }
 
 
 // Función para listar todos los archivos de respaldo
-function listarRespaldosRealizados() {
-  // Reemplaza con la ruta del directorio donde guardas los respaldos
-  const directoryPath = path.join(__dirname, 'ruta/a/tu/directorio/de/respaldos');
+function listarRespaldosRealizados(usuario,userConn) {
+  // Usa directamente la ruta del directorio donde guardas los respaldos
+  const directoryPath = 'D:/VACACIONES DICIEMBRE 2023/BASE DE DATOS 2/LABORATORIO BD/Bases2/Bases2/Practica2';
 
   fs.readdir(directoryPath, (err, files) => {
     if (err) {
@@ -619,8 +644,7 @@ function listarRespaldosRealizados() {
       return;
     }
 
-    const backupFiles = files.filter(file => file.match(/^\d{2}-\d{2}-\d{4}\s\d{2}_\d{2}_\d{2}\.sql$/));
-
+    const backupFiles = files.filter(file => file.match(/^\d{2}-\d{2}-\d{4}_\d{2}_\d{2}_\d{2}\.sql$/));
     if (backupFiles.length === 0) {
       console.log('No se encontraron archivos de respaldo.');
       return;
@@ -630,5 +654,7 @@ function listarRespaldosRealizados() {
     backupFiles.forEach(file => {
       console.log(file);
     });
+    pantallaMenuPrincipal(usuario,userConn)
   });
+
 }
