@@ -80,6 +80,7 @@ function pantallaInicial() {
         break;
       case '3':
         rl.close();
+        pantallaInicial();
         break;
       default:
         console.log('Opción no válida.');
@@ -208,33 +209,45 @@ function registrarUsuario() {
                             })
 
                             // Ahora, agregar el usuario a la tabla EMPLEADO
+
                             const agregarEmpleadoSQL = `INSERT INTO EMPLEADO (usuario, contrasenia, rol, fecha_hora) VALUES (?, ?, ?, NOW())`;
+                            
                             userConn.query(agregarEmpleadoSQL, [nuevoUsuario, contrasena, rol], (err, result) => {
                               if (err) {
                                 console.error('Error al agregar el usuario a la tabla EMPLEADO:', err.message);
-                              } else {
-                                console.log('Usuario registrado exitosamente en la tabla EMPLEADO con la fecha y hora actuales.');
+                                userConn.end();
+                                pantallaInicial();
+                                return;
                               }
-                              userConn.end();
-                              pantallaInicial();
 
+                              let accion = 'Registro';
+                              let mensaje = `Nuevo usuario ${nuevoUsuario} registrado con el rol ${rol}`;
+                              registrarEnBitacora(usuarioAdmin, accion, mensaje, userConn, function () {
+                                userConn.end(); // Cierra la conexión aquí después de registrar en bitácora
+                                pantallaInicial();
+                              });
                             });
 
-                          });
+
+
+
+                          
+
                         });
                       });
-                    }
-                  });
-                } else {
-                  console.log('Registro cancelado.');
-                  pantallaInicial();
+                    });
                 }
               });
-            });
-          });
+            } else {
+              console.log('Registro cancelado.');
+              pantallaInicial();
+            }
+              });
         });
       });
     });
+  });
+});
   });
 }
 
@@ -263,7 +276,7 @@ function pantallaMenuPrincipal(usuario, userConn) {
         pantalla4('ELIMINAR', usuario, userConn);
         break;
       case '5':
-        realizarRespaldo(usuario, userConn); 
+        realizarRespaldo(usuario, userConn);
         break;
       case '6':
         listarRespaldosRealizados();
@@ -516,25 +529,35 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
   userConn.query(query, function (err, results, fields) {
     if (err) {
       console.error('Error al realizar la operación:', err.message);
+      userConn.end();
       pantallaMenuPrincipal(usuario, userConn);
       return;
     }
+
+
     console.log('Resultados de la operación:', results);
-    pantallaMenuPrincipal(usuario, userConn);
+    // Registrar la acción en la bitácora y luego cerrar la conexión
+    registrarEnBitacora(usuario, accion, mensaje, userConn, () => {
+      userConn.end(); // Cierra la conexión aquí
+      pantallaMenuPrincipal(usuario, userConn);
+    });
   });
 }
 
 
-function registrarEnBitacora(usuario, accion, mensaje, userConn) {
-  const query = `INSERT INTO BITACORA (usuario_log, accion, mensaje, fecha_hora) VALUES (?, ?, ?, NOW())`;
-  userConn.query(query, [usuario, accion, mensaje], (err, result) => {
+
+function registrarEnBitacora(usuario, accion, mensaje, userConn, callback) {
+  const query = `INSERT INTO BITACORA (accion, mensaje, usuario_log, fecha_hora) VALUES (?, ?, ?, NOW())`;
+  userConn.query(query, [accion, mensaje, usuario], (err, result) => {
     if (err) {
       console.error('Error al registrar en la bitácora:', err.message);
     } else {
       console.log('Acción registrada en la bitácora.');
     }
+    callback(); // Ejecuta el callback después de completar la operación
   });
 }
+
 
 
 // Utilidad para obtener la fecha y hora en el formato deseado
@@ -553,7 +576,7 @@ function getFormattedTimestamp() {
 // Función para realizar respaldo completo
 function realizarRespaldo(usuario, userConn) {
   const backupFileName = `${getFormattedTimestamp()}.sql`;
-  
+
   const command = `mysqldump -u${userConn.user} -p${userConn.password} ${userConn.database} > ${backupFileName}`;
 
   exec(command, (error, stdout, stderr) => {
@@ -590,7 +613,7 @@ function restaurarRespaldo(usuario, userConn) {
 // Función para listar todos los archivos de respaldo
 function listarRespaldosRealizados() {
   // Reemplaza con la ruta del directorio donde guardas los respaldos
-  const directoryPath = path.join(__dirname, 'ruta/a/tu/directorio/de/respaldos'); 
+  const directoryPath = path.join(__dirname, 'ruta/a/tu/directorio/de/respaldos');
 
   fs.readdir(directoryPath, (err, files) => {
     if (err) {
@@ -599,7 +622,7 @@ function listarRespaldosRealizados() {
     }
 
     const backupFiles = files.filter(file => file.match(/^\d{2}-\d{2}-\d{4}\s\d{2}_\d{2}_\d{2}\.sql$/));
-    
+
     if (backupFiles.length === 0) {
       console.log('No se encontraron archivos de respaldo.');
       return;
