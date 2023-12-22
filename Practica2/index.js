@@ -380,7 +380,8 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
               userConn.query(query, [nuevaEdad, nuevoGenero, idPaciente], (err, results) => {
                 if (err) console.error(err);
                 else console.log('Registro actualizado con éxito');
-                rl.close();
+                pantallaMenuPrincipal(usuario, userConn);
+
               });
             });
           });
@@ -394,7 +395,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
                 userConn.query(query, [nuevaActividad, nuevoIdHabitacion || null, nuevoIdPaciente || null, idLogActividad], (err, results) => {
                   if (err) console.error(err);
                   else console.log('Log de actividad actualizado con éxito');
-                  rl.close();
+                  pantallaMenuPrincipal(usuario, userConn);
                 });
               });
             });
@@ -407,7 +408,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
             userConn.query(query, [nuevoEstado, idLogHabitacion], (err, results) => {
               if (err) console.error(err);
               else console.log('Log de habitación actualizado con éxito');
-              rl.close();
+              pantallaMenuPrincipal(usuario, userConn);
             });
           });
         });
@@ -423,7 +424,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
             userConn.query(query, [nuevaHabitacion, idHabitacion], (err, results) => {
               if (err) console.error(err);
               else console.log('Habitación actualizada con éxito');
-              rl.close();
+              pantallaMenuPrincipal(usuario, userConn);
             });
           });
         });
