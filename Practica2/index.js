@@ -239,7 +239,9 @@ function registrarUsuario() {
                             
 
                           });
+
                         });
+                        
                       });
                       pantallaInicial();
                     }
@@ -360,6 +362,14 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
       query = `SELECT * FROM ${tabla};`;
       accion = 'Consulta';
       mensaje = `Consulta de registros en la tabla ${tabla}`
+      userConn.query(query, (err, results) => {
+        if (err) {
+          console.error('Error en la consulta:', err);
+        } else {
+          console.log('Resultados de la consulta:', results);
+        }
+        pantallaMenuPrincipal(usuario, userConn);
+      });
       break;
     case 'ACTUALIZAR':
       if (tabla === 'PACIENTE') {
@@ -531,28 +541,10 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
 
   // Registrar la acción en la bitácora
   registrarEnBitacora(usuario, accion, mensaje, userConn);
-
-  userConn.query(query, function (err, results, fields) {
-    if (err) {
-      console.error('Error al realizar la operación:', err.message);
-      userConn.end();
-      pantallaMenuPrincipal(usuario, userConn);
-      return;
-    }
-
-
-    console.log('Resultados de la operación:', results);
-    // Registrar la acción en la bitácora y luego cerrar la conexión
-    registrarEnBitacora(usuario, accion, mensaje, userConn, () => {
-      userConn.end(); // Cierra la conexión aquí
-      pantallaMenuPrincipal(usuario, userConn);
-    });
-  });
 }
 
 
-
-function registrarEnBitacora(usuario, accion, mensaje, userConn, callback) {
+function registrarEnBitacora(usuario, accion, mensaje, userConn) {
   const query = `INSERT INTO BITACORA (accion, mensaje, usuario_log, fecha_hora) VALUES (?, ?, ?, NOW())`;
   userConn.query(query, [accion, mensaje, usuario], (err, result) => {
     if (err) {
@@ -560,7 +552,6 @@ function registrarEnBitacora(usuario, accion, mensaje, userConn, callback) {
     } else {
       console.log('Acción registrada en la bitácora.');
     }
-    callback(); // Ejecuta el callback después de completar la operación
   });
 }
 
