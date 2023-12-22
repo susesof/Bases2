@@ -491,7 +491,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
             userConn.query(query, [idPaciente], (err, results) => {
               if (err) console.error(err);
               else console.log('Paciente eliminado con éxito');
-              rl.close();
+              pantallaMenuPrincipal(usuario, userConn);
             });
           });
           break;
@@ -502,7 +502,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
             userConn.query(query, [idHabitacion], (err, results) => {
               if (err) console.error(err);
               else console.log('Habitación eliminada con éxito');
-              rl.close();
+              pantallaMenuPrincipal(usuario, userConn);
             });
           });
           break;
@@ -512,7 +512,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
             userConn.query(query, [idLogActividad], (err, results) => {
               if (err) console.error(err);
               else console.log('Log de actividad eliminado con éxito');
-              rl.close();
+              pantallaMenuPrincipal(usuario, userConn);
             });
           });
           break;
@@ -522,7 +522,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
             userConn.query(query, [idLogHabitacion], (err, results) => {
               if (err) console.error(err);
               else console.log('Log de habitación eliminado con éxito');
-              rl.close();
+              pantallaMenuPrincipal(usuario, userConn);
             });
           });
           break;
