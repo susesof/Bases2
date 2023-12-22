@@ -233,6 +233,7 @@ function registrarUsuario() {
                               }
                               console.log('Empleado agregado y bitácora actualizada exitosamente.');
                               // Otras acciones...
+                            pantallaInicial();
                             });
 
                             // Cerrar conexión
