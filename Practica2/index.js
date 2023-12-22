@@ -223,7 +223,7 @@ function registrarUsuario() {
                             let accion = 'Registro';
                             let mensaje = `Registro del usuario ${nuevoUsuario}`;
                             const valoresEmpleado = [nuevoUsuario, contrasena, rol];
-                            const valoresBitacora = [accion, mensaje,usuarioAdmin];
+                            const valoresBitacora = [accion, mensaje, usuarioAdmin];
 
                             // Ejecutar consultas
                             userConn.query(agregarEmpleadoYRegistrarBitacoraSQL, [...valoresEmpleado, ...valoresBitacora], (err, results) => {
@@ -236,13 +236,13 @@ function registrarUsuario() {
                             });
 
                             // Cerrar conexión
-                           userConn.end();
-                            
+                            userConn.end();
+
 
                           });
 
                         });
-                        
+
                       });
                       pantallaInicial();
                     }
@@ -289,7 +289,7 @@ function pantallaMenuPrincipal(usuario, userConn) {
         realizarRespaldo(usuario, userConn);
         break;
       case '6':
-        listarRespaldosRealizados(usuario,userConn);
+        listarRespaldosRealizados(usuario, userConn);
         break;
       case '7':
         restaurarRespaldo(usuario, userConn);
@@ -374,7 +374,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
       mensaje = `Consulta de registros en la tabla ${tabla}`
       userConn.query(query, (err, results) => {
         if (err) {
-          console.error('Error en la consulta:', err);
+          console.error('Error en la consulta:', 'No tiene los permisos necesarios para realizar esta consulta.');
         } else {
           console.log('Resultados de la consulta:', results);
         }
@@ -388,7 +388,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
             rl.question('Ingrese el nuevo género del paciente: ', (nuevoGenero) => {
               query = `UPDATE PACIENTE SET edad = ?, genero = ? WHERE idPaciente = ?;`;
               userConn.query(query, [nuevaEdad, nuevoGenero, idPaciente], (err, results) => {
-                if (err) console.error(err);
+                if (err) console.error('No tienes los permisos necesarios para realizar esta actualización.');
                 else console.log('Registro actualizado con éxito');
                 pantallaMenuPrincipal(usuario, userConn);
 
@@ -403,7 +403,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
               rl.question('Ingrese el nuevo ID de paciente (dejar en blanco si no se cambia): ', (nuevoIdPaciente) => {
                 query = `UPDATE LOG_ACTIVIDAD SET actividad = ?, HABITACION_idHabitacion = COALESCE(?, HABITACION_idHabitacion), PACIENTE_idPaciente = COALESCE(?, PACIENTE_idPaciente) WHERE id_log_actividad = ?;`;
                 userConn.query(query, [nuevaActividad, nuevoIdHabitacion || null, nuevoIdPaciente || null, idLogActividad], (err, results) => {
-                  if (err) console.error(err);
+                  if (err) console.error('No tienes los permisos necesarios para realizar esta actualización.');
                   else console.log('Log de actividad actualizado con éxito');
                   pantallaMenuPrincipal(usuario, userConn);
                 });
@@ -416,7 +416,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
           rl.question('Ingrese el nuevo estado: ', (nuevoEstado) => {
             query = `UPDATE LOG_HABITACION SET statusx = ? WHERE id_log_habitacion = ?;`;
             userConn.query(query, [nuevoEstado, idLogHabitacion], (err, results) => {
-              if (err) console.error(err);
+              if (err) console.error('No tienes los permisos necesarios para realizar esta actualización.');
               else console.log('Log de habitación actualizado con éxito');
               pantallaMenuPrincipal(usuario, userConn);
             });
@@ -432,7 +432,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
             }
             query = `UPDATE HABITACION SET habitacion = ? WHERE idHabitacion = ?;`;
             userConn.query(query, [nuevaHabitacion, idHabitacion], (err, results) => {
-              if (err) console.error(err);
+              if (err) console.error('No tienes los permisos necesarios para realizar esta actualización.');
               else console.log('Habitación actualizada con éxito');
               pantallaMenuPrincipal(usuario, userConn);
             });
@@ -454,7 +454,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
             rl.question('Ingrese el nombre de la habitación: ', (nombreHabitacion) => {
               query = `INSERT INTO HABITACION (idHabitacion, habitacion) VALUES (?, ?);`;
               userConn.query(query, [idHabitacion, nombreHabitacion], (err, results) => {
-                if (err) console.error(err);
+                if (err) console.error('No tienes los permisos necesarios para agregar datos.');
                 else console.log('Habitación agregada con éxito');
                 rl.close();
               });
@@ -469,7 +469,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
               rl.question('Ingrese el ID del paciente: ', (idPaciente) => {
                 query = `INSERT INTO LOG_ACTIVIDAD (actividad, HABITACION_idHabitacion, PACIENTE_idPaciente) VALUES (?, ?, ?);`;
                 userConn.query(query, [actividad, idHabitacion, idPaciente], (err, results) => {
-                  if (err) console.error(err);
+                  if (err) console.error('No tienes los permisos necesarios para agregar datos.');
                   else console.log('Log de actividad agregado con éxito');
                   rl.close();
                 });
@@ -482,7 +482,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
             rl.question('Ingrese el estado: ', (estado) => {
               query = `INSERT INTO LOG_HABITACION (idHabitacion, statusx) VALUES (?, ?);`;
               userConn.query(query, [idHabitacion, estado], (err, results) => {
-                if (err) console.error(err);
+                if (err) console.error('No tienes los permisos necesarios para agregar datos.');
                 else console.log('Log de habitación agregado con éxito');
                 rl.close();
               });
@@ -500,7 +500,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
           rl.question('Ingrese el ID del paciente a eliminar: ', (idPaciente) => {
             query = `DELETE FROM PACIENTE WHERE idPaciente = ?;`;
             userConn.query(query, [idPaciente], (err, results) => {
-              if (err) console.error(err);
+              if (err) console.error('No tienes los permisos necesarios para realizar esta eliminación.');
               else console.log('Paciente eliminado con éxito');
               pantallaMenuPrincipal(usuario, userConn);
             });
@@ -511,7 +511,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
           rl.question('Ingrese el ID de la habitación a eliminar: ', (idHabitacion) => {
             query = `DELETE FROM HABITACION WHERE idHabitacion = ?;`;
             userConn.query(query, [idHabitacion], (err, results) => {
-              if (err) console.error(err);
+              if (err) console.error('No tienes los permisos necesarios para realizar esta eliminación.');
               else console.log('Habitación eliminada con éxito');
               pantallaMenuPrincipal(usuario, userConn);
             });
@@ -521,7 +521,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
           rl.question('Ingrese el ID del log de actividad a eliminar: ', (idLogActividad) => {
             query = `DELETE FROM LOG_ACTIVIDAD WHERE id_log_actividad = ?;`;
             userConn.query(query, [idLogActividad], (err, results) => {
-              if (err) console.error(err);
+              if (err) console.error('No tienes los permisos necesarios para realizar esta eliminación.');
               else console.log('Log de actividad eliminado con éxito');
               pantallaMenuPrincipal(usuario, userConn);
             });
@@ -531,7 +531,7 @@ function realizarOperacion(tabla, operacion, userConn, usuario) {
           rl.question('Ingrese el ID del log de habitación a eliminar: ', (idLogHabitacion) => {
             query = `DELETE FROM LOG_HABITACION WHERE id_log_habitacion = ?;`;
             userConn.query(query, [idLogHabitacion], (err, results) => {
-              if (err) console.error(err);
+              if (err) console.error('No tienes los permisos necesarios para realizar esta eliminación.');
               else console.log('Log de habitación eliminado con éxito');
               pantallaMenuPrincipal(usuario, userConn);
             });
@@ -581,80 +581,95 @@ function getFormattedTimestamp() {
 }
 
 
-function realizarRespaldo(usuario1,userConn) {
+function realizarRespaldo(usuario1, userConn) {
   rl.question('Ingrese el nombre de usuario de MySQL: ', (usuario) => {
     preguntaOculta('Ingrese la contraseña de MySQL: ', (contrasena) => {
-      const backupFileName = `${getFormattedTimestamp()}.sql`;
-      // El path completo donde se desea guardar el respaldo podría ser necesario dependiendo del sistema y permisos
-      const pathToSaveBackup = `${backupFileName}`; // Asegúrate de tener permisos de escritura en el directorio actual
+      if (usuario1 == 'root') {
+        const backupFileName = `${getFormattedTimestamp()}.sql`;
+        // El path completo donde se desea guardar el respaldo podría ser necesario dependiendo del sistema y permisos
+        const pathToSaveBackup = `${backupFileName}`; // Asegúrate de tener permisos de escritura en el directorio actual
 
-      // Utiliza la utilidad de comillas adecuadas para contraseñas que puedan contener caracteres especiales
-      const command = `mysqldump -u ${usuario} -p Practica2_BD2 > ${pathToSaveBackup}`;
-  
-      console.log('Ejecutando comando de respaldo: ', command);
+        // Utiliza la utilidad de comillas adecuadas para contraseñas que puedan contener caracteres especiales
+        const command = `mysqldump -u ${usuario} -p Practica2_BD2 > ${pathToSaveBackup}`;
 
-      exec(command, (error, stdout, stderr) => {
-        if (error) {
-          console.error(`Error al realizar el respaldo: ${error.message}`);
-          return;
-        }
-        console.log(`Respaldo realizado con éxito: ${backupFileName}`);
-        pantallaMenuPrincipal(usuario1,userConn);
-      });
+        console.log('Ejecutando comando de respaldo: ', command);
+
+        exec(command, (error, stdout, stderr) => {
+          if (error) {
+            console.error(`Error al realizar el respaldo: ${error.message}`);
+            pantallaMenuPrincipal(usuario1, userConn);
+            return;
+          }
+          console.log(`Respaldo realizado con éxito: ${backupFileName}`);
+          pantallaMenuPrincipal(usuario1, userConn);
+        });
+      } else {
+        console.log('No tiene permisos para realizar un respaldo.');
+        pantallaMenuPrincipal(usuario1, userConn);
+      }
     });
+
   });
- 
+
 }
 
 
 // Función para restaurar respaldo
 function restaurarRespaldo(usuario, userConn) {
-  rl.question('Ingrese el nombre del archivo de respaldo a restaurar: ', (backupFileName) => {
-    if (!fs.existsSync(backupFileName)) {
-      console.error('El archivo de respaldo no existe.');
-      rl.close();
-      return;
-    }
-
-    const command = `mysql -u ${usuario} -p Practica2_BD2 < ${backupFileName}`;
-
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error al restaurar el respaldo: ${error}`);
+  if (usuario == 'root') {
+    rl.question('Ingrese el nombre del archivo de respaldo a restaurar: ', (backupFileName) => {
+      if (!fs.existsSync(backupFileName)) {
+        console.error('El archivo de respaldo no existe.');
+        rl.close();
         return;
       }
-      console.log(`Respaldo restaurado con éxito: ${backupFileName}`);
-      pantallaMenuPrincipal(usuario,userConn);
+
+      const command = `mysql -u ${usuario} -p Practica2_BD2 < ${backupFileName}`;
+
+      exec(command, (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Error al restaurar el respaldo: ${error}`);
+          return;
+        }
+        console.log(`Respaldo restaurado con éxito: ${backupFileName}`);
+        pantallaMenuPrincipal(usuario, userConn);
+      });
+
     });
+  } else {
+    console.log('No tiene permisos para restaurar un respaldo.');
+    pantallaMenuPrincipal(usuario, userConn);
+  }
 
-  });
-
-  
 }
 
 
 // Función para listar todos los archivos de respaldo
-function listarRespaldosRealizados(usuario,userConn) {
+function listarRespaldosRealizados(usuario, userConn) {
   // Usa directamente la ruta del directorio donde guardas los respaldos
-  const directoryPath = 'D:/VACACIONES DICIEMBRE 2023/BASE DE DATOS 2/LABORATORIO BD/Bases2/Bases2/Practica2';
+  if (usuario == 'root') {
+    const directoryPath = 'D:/VACACIONES DICIEMBRE 2023/BASE DE DATOS 2/LABORATORIO BD/Bases2/Bases2/Practica2';
 
-  fs.readdir(directoryPath, (err, files) => {
-    if (err) {
-      console.error(`Ocurrió un error al intentar leer el directorio: ${err.message}`);
-      return;
-    }
+    fs.readdir(directoryPath, (err, files) => {
+      if (err) {
+        console.error(`Ocurrió un error al intentar leer el directorio: ${err.message}`);
+        return;
+      }
 
-    const backupFiles = files.filter(file => file.match(/^\d{2}-\d{2}-\d{4}_\d{2}_\d{2}_\d{2}\.sql$/));
-    if (backupFiles.length === 0) {
-      console.log('No se encontraron archivos de respaldo.');
-      return;
-    }
+      const backupFiles = files.filter(file => file.match(/^\d{2}-\d{2}-\d{4}_\d{2}_\d{2}_\d{2}\.sql$/));
+      if (backupFiles.length === 0) {
+        console.log('No se encontraron archivos de respaldo.');
+        return;
+      }
 
-    console.log('Listado de respaldos realizados:');
-    backupFiles.forEach(file => {
-      console.log(file);
+      console.log('Listado de respaldos realizados:');
+      backupFiles.forEach(file => {
+        console.log(file);
+      });
+      pantallaMenuPrincipal(usuario, userConn)
     });
-    pantallaMenuPrincipal(usuario,userConn)
-  });
-
+  } else {
+    console.log('No tiene permisos para visualizar los respaldos.');
+    pantallaMenuPrincipal(usuario, userConn);
+  }
 }
