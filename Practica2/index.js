@@ -154,6 +154,7 @@ function registrarUsuario() {
                     password: contrasenaAdmin,
                     database: DB_DATABASE,
                     port: DB_PORT,
+                    multipleStatements: true
                   });
 
                   // Intentar conectar con la base de datos usando las credenciales del usuario
@@ -209,45 +210,50 @@ function registrarUsuario() {
                             })
 
                             // Ahora, agregar el usuario a la tabla EMPLEADO
+                            // Crear conexión con múltiples consultas habilitadas
 
-                            const agregarEmpleadoSQL = `INSERT INTO EMPLEADO (usuario, contrasenia, rol, fecha_hora) VALUES (?, ?, ?, NOW())`;
-                            
-                            userConn.query(agregarEmpleadoSQL, [nuevoUsuario, contrasena, rol], (err, result) => {
+                            // Consulta para agregar empleado y registrar en bitácora
+                            const agregarEmpleadoYRegistrarBitacoraSQL = `
+                            INSERT INTO EMPLEADO (usuario, contrasenia, rol, fecha_hora) VALUES (?, ?, ?, NOW());
+                            INSERT INTO BITACORA (accion, mensaje,usuario_log, fecha_hora) VALUES (?, ?, ?, NOW())
+                            `;
+
+                            // Valores para las consultas
+                            let accion = 'Registro';
+                            let mensaje = `Registro del usuario ${nuevoUsuario}`;
+                            const valoresEmpleado = [nuevoUsuario, contrasena, rol];
+                            const valoresBitacora = [accion, mensaje,usuarioAdmin];
+
+                            // Ejecutar consultas
+                            userConn.query(agregarEmpleadoYRegistrarBitacoraSQL, [...valoresEmpleado, ...valoresBitacora], (err, results) => {
                               if (err) {
-                                console.error('Error al agregar el usuario a la tabla EMPLEADO:', err.message);
-                                userConn.end();
-                                pantallaInicial();
+                                console.error('Error al ejecutar las consultas:', err.message);
                                 return;
                               }
-
-                              let accion = 'Registro';
-                              let mensaje = `Nuevo usuario ${nuevoUsuario} registrado con el rol ${rol}`;
-                              registrarEnBitacora(usuarioAdmin, accion, mensaje, userConn, function () {
-                                userConn.end(); // Cierra la conexión aquí después de registrar en bitácora
-                                pantallaInicial();
-                              });
+                              console.log('Empleado agregado y bitácora actualizada exitosamente.');
+                              // Otras acciones...
                             });
 
+                            // Cerrar conexión
+                           userConn.end();
+                            
 
-
-
-                          
-
+                          });
                         });
                       });
-                    });
+                      pantallaInicial();
+                    }
+                  });
+                } else {
+                  console.log('Registro cancelado.');
+                  pantallaInicial();
                 }
               });
-            } else {
-              console.log('Registro cancelado.');
-              pantallaInicial();
-            }
-              });
+            });
+          });
         });
       });
     });
-  });
-});
   });
 }
 
